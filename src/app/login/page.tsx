@@ -21,6 +21,7 @@ import toast from 'react-hot-toast';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginFormSchema, LoginFormValues } from '@/lib/validation';
+import { SlackIconSVG } from '@/components/SlackIcon';
 import { FcGoogle } from 'react-icons/fc';
 
 const LoginPage: NextPage = () => {
@@ -234,7 +235,7 @@ const LoginPage: NextPage = () => {
                             onClick={() => handleSocialLogin('oauth_slack')}
                             disabled={isLoading}
                         >
-                            <Slack className="mr-2 h-4 w-4" />
+                            <SlackIconSVG className="mr-2 h-4 w-4" />
                             Slackでログイン
                         </Button>
                     </div>
