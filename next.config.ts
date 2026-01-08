@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
             },
         ];
     },
+    // ClerkとNext.js 15の互換性のため
+    experimental: {
+        serverActions: {
+            bodySizeLimit: '2mb',
+        },
+    },
+    // Clerkの内部モジュールをトランスパイルする
+    transpilePackages: ['@clerk/nextjs'],
 };
 
 export default nextConfig;
