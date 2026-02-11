@@ -7,7 +7,14 @@ import { NextPage } from 'next';
 import { Button } from '@/components/ui/button';
 import { useUser, useAuth } from '@clerk/nextjs';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Plus, Power, Edit, Trash2 } from 'lucide-react';
+import { Plus, Power, Edit, Trash2, AirVent, Lightbulb, Play, ChevronDown } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { DeviceForm } from '@/components/device-form';
 import { Navbar } from '@/components/navigation';
 import { client } from '@/lib/HonoClient';
@@ -32,6 +39,9 @@ const Dashboard: NextPage = () => {
     const [editingDevice, setEditingDevice] = useState<Device | null>(null);
     const [deletingDevice, setDeletingDevice] = useState<Device | null>(null);
     const [isWOLSending, setIsWOLSending] = useState<string | null>(null);
+    const [selectedAirconMode, setSelectedAirconMode] = useState('AIR_HOT');
+    const [selectedLightMode, setSelectedLightMode] = useState('LIGHT_ON');
+    const [isSending, setIsSending] = useState(false);
     const { isLoaded, userId, isSignedIn } = useAuth();
     const { user, isLoaded: isUserLoaded } = useUser();
 
@@ -82,6 +92,45 @@ const Dashboard: NextPage = () => {
         }
         setShowDeviceForm(false);
         setEditingDevice(null);
+    };
+
+    // モードラベルマッピング
+    const airconModeLabels: Record<string, string> = {
+        AIR_HOT: '暖房',
+        AIR_COLD: '冷房',
+        AIR_OFF: '停止',
+        AIR_HIGH: 'ハイパワー',
+    };
+
+    const lightModeLabels: Record<string, string> = {
+        LIGHT_ON: '点灯',
+        LIGHT_OFF: '消灯',
+        LIGHT_NIGHT: '常夜灯',
+    };
+
+    // リモートコントロール実行関数
+    const handleRemoteExecute = async (type: 'aircon' | 'light', mode: string) => {
+        const labels = { ...airconModeLabels, ...lightModeLabels };
+        const deviceName = type === 'aircon' ? 'エアコン' : '照明';
+        const label = labels[mode] || mode;
+
+        setIsSending(true);
+        try {
+            const res = await client.api.control.send.$post({
+                json: { command: mode },
+            });
+            const resData = await res.json();
+
+            if (res.ok && resData.success) {
+                toast.success(`${deviceName}を「${label}」で実行しました`);
+            } else {
+                toast.error(resData.message || '送信に失敗しました');
+            }
+        } catch (error) {
+            toast.error('サーバーエラーが発生しました');
+        } finally {
+            setIsSending(false);
+        }
     };
 
     // 認証情報読み込み中の表示
@@ -159,6 +208,146 @@ const Dashboard: NextPage = () => {
                                 </CardContent>
                             </Card>
                         ))}
+                </div>
+
+                {/* リモートコントロールセクション */}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 mt-12 gap-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold">リモートコントロール</h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* エアコンカード */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <AirVent className="h-5 w-5" />
+                                <strong>エアコン</strong>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-1 block">
+                                        モード選択
+                                    </label>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-between cursor-pointer"
+                                            >
+                                                {airconModeLabels[selectedAirconMode]}
+                                                <ChevronDown className="h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                            <DropdownMenuRadioGroup
+                                                value={selectedAirconMode}
+                                                className="cursor-pointer"
+                                                onValueChange={setSelectedAirconMode}
+                                            >
+                                                <DropdownMenuRadioItem
+                                                    value="AIR_HOT"
+                                                    className="cursor-pointer"
+                                                >
+                                                    暖房
+                                                </DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem
+                                                    value="AIR_COLD"
+                                                    className="cursor-pointer"
+                                                >
+                                                    冷房
+                                                </DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem
+                                                    value="AIR_OFF"
+                                                    className="cursor-pointer"
+                                                >
+                                                    停止
+                                                </DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem
+                                                    value="AIR_HIGH"
+                                                    className="cursor-pointer"
+                                                >
+                                                    ハイパワー
+                                                </DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <Button
+                                    onClick={() =>
+                                        handleRemoteExecute('aircon', selectedAirconMode)
+                                    }
+                                    className="w-full cursor-pointer"
+                                >
+                                    <Play className="h-4 w-4 mr-2" />
+                                    実行
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* 照明カード */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Lightbulb className="h-5 w-5" />
+                                <strong>照明</strong>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-1 block">
+                                        モード選択
+                                    </label>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                className="w-full justify-between cursor-pointer"
+                                            >
+                                                {lightModeLabels[selectedLightMode]}
+                                                <ChevronDown className="h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                                            <DropdownMenuRadioGroup
+                                                value={selectedLightMode}
+                                                onValueChange={setSelectedLightMode}
+                                            >
+                                                <DropdownMenuRadioItem
+                                                    value="LIGHT_ON"
+                                                    className="cursor-pointer"
+                                                >
+                                                    点灯
+                                                </DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem
+                                                    value="LIGHT_OFF"
+                                                    className="cursor-pointer"
+                                                >
+                                                    消灯
+                                                </DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem
+                                                    value="LIGHT_NIGHT"
+                                                    className="cursor-pointer"
+                                                >
+                                                    常夜灯
+                                                </DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                                <Button
+                                    onClick={() => handleRemoteExecute('light', selectedLightMode)}
+                                    className="w-full cursor-pointer"
+                                >
+                                    <Play className="h-4 w-4 mr-2" />
+                                    実行
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
             </main>
 

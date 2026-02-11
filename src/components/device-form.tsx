@@ -16,7 +16,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { useForm, SubmitHandler, FieldErrors } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DeviceFormValues, deviceSchema } from '@/lib/validation';
 import { type Device } from '@/types/DeviceType';
@@ -54,10 +54,6 @@ export const DeviceForm = ({ device, onSave, onCancel }: DeviceFormProps) => {
         }
     }, [device, reset]);
 
-    const onFormError = (error: FieldErrors<DeviceFormValues>) => {
-        console.error('フォームのバリデーションに失敗しました:', error);
-    };
-
     const onSubmit: SubmitHandler<DeviceFormValues> = async (data) => {
         console.log('onSubmitが呼び出されました。フォームデータ:', data);
         setIsLoading(true);
@@ -81,7 +77,7 @@ export const DeviceForm = ({ device, onSave, onCancel }: DeviceFormProps) => {
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit(onSubmit, onFormError)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     {/* ...フォーム項目は変更なし... */}
                     <div className="space-y-2">
                         <Label htmlFor="name">デバイス名 *</Label>
