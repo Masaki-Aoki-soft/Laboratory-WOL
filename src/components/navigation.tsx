@@ -107,7 +107,7 @@ export const Navbar = () => {
                         <div className="flex items-center min-w-0 flex-1">
                             <Monitor className="h-5 w-5 sm:h-7 sm:w-7 text-blue-600 mr-2 sm:mr-3 flex-shrink-0" />
                             <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">
-                                Wake On Lan
+                                Smart-Home&WakeOnLan
                             </h1>
                         </div>
                         <div className="flex items-center">
@@ -143,7 +143,7 @@ export const Navbar = () => {
                     >
                         <Monitor className="h-5 w-5 sm:h-7 sm:w-7 text-blue-600 mr-2 sm:mr-3 flex-shrink-0" />
                         <h1 className="text-base sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">
-                            Wake On Lan
+                            Smart-Home & WakeOnLan
                         </h1>
                     </div>
 

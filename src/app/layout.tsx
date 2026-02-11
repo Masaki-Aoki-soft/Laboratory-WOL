@@ -12,8 +12,8 @@ import { jaJP } from '@clerk/localizations';
 const inter: NextFont = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-    title: 'VitLab-WOL',
-    description: '画像応用システム研究室のWOL',
+    title: 'スマートホーム',
+    description: 'コントロールパネル',
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
